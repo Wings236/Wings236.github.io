@@ -297,7 +297,7 @@ class="math display">\[
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2024-08-11 12:59:32" itemprop="dateModified" datetime="2024-08-11T12:59:32+08:00">2024-08-11</time>
+                <time title="修改时间：2024-08-11 17:32:23" itemprop="dateModified" datetime="2024-08-11T17:32:23+08:00">2024-08-11</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -320,7 +320,7 @@ class="math display">\[
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="测试">测试</h1>
+          <h1 id="高维空间采样的困难度讨论">高维空间采样的困难度讨论</h1>
 <p>在高维空间中，数据点的分布通常是比较稀疏的。想象在一个<span
 class="math inline">\(d\)</span>维的单位超立方体<span
 class="math inline">\([0, 1]^d\)</span>内随机撒下<span
@@ -343,6 +343,16 @@ class="math inline">\(256 \times 256\)</span> 的灰度其维度就高达<span
 class="math inline">\(65536\)</span>)，而可用的样本量<span
 class="math inline">\(n\)</span>通常远小于<span
 class="math inline">\(2^d\)</span>，因此，高维空间中数据的稀疏性是一个不可忽视的问题。</p>
+<p>图像和自然语言数据通常处于一个非常高维的空间。例如，一张<span
+class="math inline">\(256 \times
+256\)</span>的灰度图像就可以看做是一个<span
+class="math inline">\(65536\)</span>维度的向量，而一个自然语言句子，如果使用<span
+class="math inline">\(1000\)</span>维的词向量表示，那么<span
+class="math inline">\(100\)</span>个单词的句子就是一个<span
+class="math inline">\(100000\)</span>维的向量。在如此高维的空间中，数据点天然是<strong>非常稀疏</strong>的。</p>
+<p>而一般情况下，对于<span class="math inline">\(256 \times
+256\)</span>的灰度图像来说，随机采样生成的图像都是非自然的图像，看不出任意语义，如雪花一样。有意义的自然图像只占据很小的一部分空间。同样地，在高维空间的自然语言空间中随机采样，生成的文本通常缺乏语法结构和语义连贯性，与自然语言文本有很大的不同。</p>
+<p>总的来说，高维空间中数据的稀疏性对机器学习提出了挑战，因为许多传统的机器学习算法依赖数据的局部性。然而，正如图像和自然语言的例子所示，高维空间中有意义的数据通常具有特殊的结构，并不是随机分布的。因此，机器学习的一个重要任务就是设计能够捕捉和利用这些结构的模型和算法，例如卷积神经网络（CNN）利用了图像的平移不变性，Transformer利用了自然语言的时序关系。这些专门设计的模型和算法使得我们能够在高维空间中有效地学习和生成复杂的数据。</p>
 
       
     </div>
