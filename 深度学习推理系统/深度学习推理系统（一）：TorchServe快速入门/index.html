@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Math, Deep Learning, Computer Science">
+    
+    <meta name="author" content="Wings">
+    
+    <!-- Completely eliminate flash of wrong theme -->
+    <script>
+        (function() {
+            const THEME_KEY = "REDEFINE-THEME-STATUS";
+            const DARK = "dark", LIGHT = "light";
+            
+            // Get preferred theme
+            function getTheme() {
+                try {
+                    const saved = localStorage.getItem(THEME_KEY);
+                    if (saved) {
+                        const { isDark } = JSON.parse(saved);
+                        return isDark ? DARK : LIGHT;
+                    }
+                } catch (e) {}
+                
+                return matchMedia("(prefers-color-scheme: dark)").matches ? DARK : LIGHT;
+            }
+            
+            // Apply theme to document
+            function applyTheme(theme) {
+                const isDark = theme === DARK;
+                const root = document.documentElement;
+                
+                // Set data attribute for CSS variables
+                root.setAttribute("data-theme", theme);
+                
+                // Set classes for compatibility
+                root.classList.add(theme);
+                root.classList.remove(isDark ? LIGHT : DARK);
+                root.style.colorScheme = theme;
+            }
+            
+            // Initial application
+            const theme = getTheme();
+            applyTheme(theme);
+            
+            // Listen for system preference changes
+            matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ({ matches }) => {
+                // Only update if using system preference (no localStorage entry)
+                if (!localStorage.getItem(THEME_KEY)) {
+                    applyTheme(matches ? DARK : LIGHT);
+                }
+            });
+            
+            // Set body classes once DOM is ready
+            if (document.readyState !== "loading") {
+                document.body.classList.add(theme + "-mode");
+            } else {
+                document.addEventListener("DOMContentLoaded", () => {
+                    document.body.classList.add(theme + "-mode");
+                    document.body.classList.remove((theme === DARK ? LIGHT : DARK) + "-mode");
+                });
+            }
+        })();
+    </script>
+    
+    <!-- Critical CSS to prevent flash -->
+    <style>
+        :root[data-theme="dark"] {
+            --background-color: #202124;
+            --background-color-transparent: rgba(32, 33, 36, 0.6);
+            --second-background-color: #2d2e32;
+            --third-background-color: #34353a;
+            --third-background-color-transparent: rgba(32, 33, 36, 0.6);
+            --primary-color: #0066CC;
+            --first-text-color: #ffffff;
+            --second-text-color: #eeeeee;
+            --third-text-color: #bebec6;
+            --fourth-text-color: #999999;
+            --default-text-color: #bebec6;
+            --invert-text-color: #373D3F;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --selection-color: #0066CC;
+            --shadow-color-1: rgba(255, 255, 255, 0.08);
+            --shadow-color-2: rgba(255, 255, 255, 0.05);
+        }
+        
+        :root[data-theme="light"] {
+            --background-color: #fff;
+            --background-color-transparent: rgba(255, 255, 255, 0.6);
+            --second-background-color: #f8f8f8;
+            --third-background-color: #f2f2f2;
+            --third-background-color-transparent: rgba(241, 241, 241, 0.6);
+            --primary-color: #0066CC;
+            --first-text-color: #16171a;
+            --second-text-color: #2f3037;
+            --third-text-color: #5e5e5e;
+            --fourth-text-color: #eeeeee;
+            --default-text-color: #373D3F;
+            --invert-text-color: #bebec6;
+            --border-color: rgba(0, 0, 0, 0.08);
+            --selection-color: #0066CC;
+            --shadow-color-1: rgba(0, 0, 0, 0.08);
+            --shadow-color-2: rgba(0, 0, 0, 0.05);
+        }
+        
+        body {
+            background-color: var(--background-color);
+            color: var(--default-text-color);
+        }
+        
+        /* Apply body classes as soon as DOM is ready */
+        :root[data-theme="dark"] body {
+            background-color: var(--background-color);
+            color: var(--default-text-color);
+        }
+    </style>
+    
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="http://example.com/深度学习推理系统/深度学习推理系统（一）：torchserve快速入门/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+    
+    
+        
+        <meta name="description" content="your_description">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深度学习推理系统（一）：TorchServe快速入门">
+<meta property="og:url" content="http://example.com/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%8E%A8%E7%90%86%E7%B3%BB%E7%BB%9F/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%8E%A8%E7%90%86%E7%B3%BB%E7%BB%9F%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9ATorchServe%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/index.html">
+<meta property="og:site_name" content="Wings&#39; Blog">
+<meta property="og:description" content="your_description">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%8E%A8%E7%90%86%E7%B3%BB%E7%BB%9F/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%8E%A8%E7%90%86%E7%B3%BB%E7%BB%9F%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9ATorchServe%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/your_image_path">
+<meta property="article:published_time" content="2025-03-30T02:08:38.000Z">
+<meta property="article:modified_time" content="2025-12-16T15:57:36.806Z">
+<meta property="article:author" content="Wings">
+<meta property="article:tag" content="推理系统">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%8E%A8%E7%90%86%E7%B3%BB%E7%BB%9F/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%8E%A8%E7%90%86%E7%B3%BB%E7%BB%9F%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9ATorchServe%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/your_image_path">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="/images/CatFav.jpeg" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/CatFav.jpeg">
+    <meta name="theme-color" content="#A31F34">
+    <link rel="shortcut icon" href="/images/CatFav.jpeg">
+    <!--- Page Info-->
+    
+    <title>
+        
+            深度学习推理系统（一）：TorchServe快速入门 | Wings&#39; Blog
+        
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/css/build/tailwind.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/GeistMono/geist-mono.css">
+
+    
+<link rel="stylesheet" href="/fonts/Geist/geist.css">
+
+    <!--- Font Part-->
+    
+    
+    
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    
+    
+    
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"example.com","root":"/","language":"zh-CN","path":"search.json"};
+    window.theme = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"delete_mask":false,"title_alignment":"left","headings_top_spacing":{"h1":"3.2rem","h2":"2.4rem","h3":"1.9rem","h4":"1.6rem","h5":"1.4rem","h6":"1.3rem"}},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":true,"auto":false,"list":[]},"code_block":{"copy":true,"style":"mac","highlight_theme":{"light":"github","dark":"vs2015"},"font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":{"enable":true,"default":"cc_by_nc_sa"},"lazyload":true,"pangu_js":false,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"mobile_limit":2,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#A31F34","secondary":null,"default_mode":"light"},"global":{"fonts":{"chinese":{"enable":true,"family":"Noto Sans SC","url":"https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap"},"english":{"enable":false,"family":null,"url":null},"title":{"enable":false,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":false},"scroll_progress":{"bar":false,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":true,"site_pv":true,"site_uv":true,"post_pv":true},"single_page":true,"preloader":{"enable":false,"custom_message":null},"side_tools":{"gear_rotation":true,"auto_expand":false},"open_graph":{"enable":true,"image":"your_image_path","description":"your_description"},"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/images/wallhaven-wqery6-light.webp","dark":"/images/wallhaven-wqery6-dark.webp"},"title":"Wings' Blog","subtitle":{"text":[],"hitokoto":{"enable":false,"show_author":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":false,"style":"default","links":{"github":null,"instagram":null,"zhihu":null,"twitter":null,"email":null},"qrs":{"weixin":null}}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null,"lrc":null}]},"mermaid":{"enable":false,"version":"9.3.0"}},"version":"2.8.5","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Archives":{"path":"/archives","icon":"fa-regular fa-archive"},"Tag":{"path":"/tags","icon":"fa-regular fa-tags"},"Category":{"path":"/categories","icon":"fa-regular fa-folder"},"About":{"icon":"fa-regular fa-user","submenus":{"Me":"/about","Github":"https://github.com/Wings236"}}},"search":{"enable":true,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"blur"},"home":{"sidebar":{"enable":true,"position":"left","first_item":"menu","announcement":"I am interested in Applied Mathematics, Data Science, High Performance Computing, Efficient Computation.","show_on_mobile":true,"links":{"归档":{"path":"/archives","icon":"fa-regular fa-archive"},"标签":{"path":"/tags","icon":"fa-regular fa-tags"},"分类":{"path":"/categories","icon":"fa-regular fa-folder"}}},"article_date_format":"auto","excerpt_length":200,"categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footerStart":"2022/8/17 11:45:14"};
+    window.lang_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+
+<body>
+	<div class="progress-bar-container">
+	
+
+	
+	<span class="pjax-progress-bar"></span>
+	<!--        <span class="swup-progress-icon">-->
+	<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+	<!--        </span>-->
+	
+</div>
+
+<main class="page-container" id="swup">
+
+	
+
+	<div class="main-content-container flex flex-col justify-between min-h-dvh">
+		<div class="main-content-header">
+			<header class="navbar-container px-6 md:px-12">
+    <div class="navbar-content transition-navbar ">
+        <div class="left">
+            
+            <a class="logo-title" href="/">
+                
+                Wings&#39; Blog
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    首页
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/archives"
+                                        >
+                                    <i class="fa-regular fa-archive fa-fw"></i>
+                                    归档
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/tags"
+                                        >
+                                    <i class="fa-regular fa-tags fa-fw"></i>
+                                    标签
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/categories"
+                                        >
+                                    <i class="fa-regular fa-folder fa-fw"></i>
+                                    分类
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class="has-dropdown"
+                                   href="#"
+                                        onClick=&#34;return false;&#34;>
+                                    <i class="fa-regular fa-user fa-fw"></i>
+                                    关于
+                                    <i class="fa-solid fa-chevron-down fa-fw"></i>
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                                    <ul class="sub-menu">
+                                        
+                                            <li>
+                                                <a href="/about">
+                                                    ME
+                                                </a>
+                                            </li>
+                                        
+                                            <li>
+                                                <a target="_blank" rel="noopener" href="https://github.com/Wings236">
+                                                    GITHUB
+                                                </a>
+                                            </li>
+                                        
+                                    </ul>
+                                
+                            </li>
+                    
+                    
+                        <li class="navbar-item search search-popup-trigger">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </li>
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                    <div class="icon-item search search-popup-trigger"><i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-dvh w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                首页
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/archives"
+                        >
+                            <span>
+                                归档
+                            </span>
+                            
+                                <i class="fa-regular fa-archive fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/tags"
+                        >
+                            <span>
+                                标签
+                            </span>
+                            
+                                <i class="fa-regular fa-tags fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/categories"
+                        >
+                            <span>
+                                分类
+                            </span>
+                            
+                                <i class="fa-regular fa-folder fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item-sub text-base my-1.5 flex flex-col w-full">
+                        
+                        <div class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary cursor-pointer text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                             navbar-data-toggle="submenu-About"
+                        >
+                            <span>
+                                关于
+                            </span>
+                            
+                                <i class="fa-solid fa-chevron-right fa-sm fa-fw transition-all"></i>
+                            
+                        </div>
+                        
+
+                        
+                            <div class="flex-col items-start px-2 py-2 hidden" data-target="submenu-About">
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           href="/about">ME</a>
+                                    </div>
+                                
+                                    <div class="drawer-navbar-item text-base flex flex-col justify-center items-start hover:underline active:underline hover:underline-offset-1 rounded-3xl">
+                                        <a class=" text-third-text-color text-xl"
+                                           target="_blank" rel="noopener" href="https://github.com/Wings236">GITHUB</a>
+                                    </div>
+                                
+                            </div>
+                        
+                    </li>
+            
+
+            
+            
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/archives"
+                        >
+                            <span>归档</span>
+                            <i class="fa-regular fa-archive fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/tags"
+                        >
+                            <span>标签</span>
+                            <i class="fa-regular fa-tags fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+                    
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full active"
+                           href="/categories"
+                        >
+                            <span>分类</span>
+                            <i class="fa-regular fa-folder fa-sm fa-fw"></i>
+                        </a>
+                    </li>
+                
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">4</div>
+        <div class="label text-third-text-color text-sm">标签</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">1</div>
+        <div class="label text-third-text-color text-sm">分类</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">8</div>
+        <div class="label text-third-text-color text-sm">文章</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+		</div>
+
+		<div class="main-content-body transition-fade-up">
+			
+
+			<div class="main-content">
+				<div class="post-page-container flex relative justify-between box-border w-full h-full">
+	<div class="article-content-container">
+
+		<div class="article-title relative w-full">
+			
+			<div class="w-full flex items-center pt-6 justify-start">
+				<h1 class="article-title-regular text-second-text-color tracking-tight text-4xl md:text-6xl font-semibold px-2 sm:px-6 md:px-8 py-3">深度学习推理系统（一）：TorchServe快速入门</h1>
+			</div>
+			
+		</div>
+
+		
+		<div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+			<div class="avatar w-[46px] h-[46px] flex-shrink-0 rounded-medium border border-border-color p-[1px]">
+				<img src="/images/Cat.jpg">
+			</div>
+			<div class="info flex flex-col justify-between">
+				<div class="author flex items-center">
+					<span class="name text-default-text-color text-lg font-semibold">Wings</span>
+					
+					<span class="author-label ml-1.5 text-xs px-2 py-0.5 rounded-small text-third-text-color border border-shadow-color-1">Lv2</span>
+					
+				</div>
+				<div class="meta-info">
+					<div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2025-03-30 10:08:38</span>
+        <span class="mobile">2025-03-30 10:08:38</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2025-12-16 23:57:36</span>
+            <span class="mobile">2025-12-16 23:57:36</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+    
+        <span class="article-tags article-meta-item">
+            <i class="fa-regular fa-tags"></i>&nbsp;
+            <ul>
+                
+                    <li>
+                        <a href="/tags/%E6%8E%A8%E7%90%86%E7%B3%BB%E7%BB%9F/">推理系统</a>&nbsp;
+                    </li>
+                
+            </ul>
+        </span>
+    
+
+    
+    
+    
+    
+        <span class="article-pv article-meta-item">
+            <i class="fa-regular fa-eye"></i>&nbsp;<span id="busuanzi_value_page_pv"></span>
+        </span>
+    
+</div>
+
+				</div>
+			</div>
+		</div>
+		
+
+		
+
+
+		<div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+			<h1 id="为什么需要推理框架"><a href="#为什么需要推理框架" class="headerlink" title="为什么需要推理框架"></a>为什么需要推理框架</h1><p>上一篇<a class="link"   target="_blank" rel="noopener" href="https://www.wingslab.top/%E5%85%B6%E4%BB%96/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2%E6%B5%85%E6%80%9D/" >文章<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>已经提到，当前很多应用都增加了深度学习功能，但深度学习模型的一个特点是，模型能力越强，需要的算力也越多。这和传统的提供互联网服务有类似但也有不同，互联网的服务是不得不通过网络方式进行，比如移动支付需要进行网络验证，网络游戏，需要通过服务器通信。</p>
+<p>而深度学习模型能力，其实可以不通过互联网的方式直接使用，但对于大部分的用户来说，为了使用模型能力本质上是使用背后的算力，所以不管是直接使用模型，还是使算力自主构建模型都只能通过服务的方式提供，前者直接通过访问模型厂商所提供的API服务，后者则需要自主购买算力服务。</p>
+<p>那我们从模型厂商的视角出发，模型厂商本质上背后是拥有一群算力资源将其部署对应的模型服务提供给用户，那么为了更高效地提供模型服务，比如多个用户的模型服务请求，能否合并到模型进行计算，从而提升计算效率；亦或是将模型计算进行压缩，以更低地成本进行模型推理从而提供低成本的模型服务。</p>
+<p>那么为了提供上述所说的模型推理服务，自然需要对应的组件，那就是推理框架，未来一段时间会逐渐介绍常用的推理框架：<br>TorchServe，TFServe，Kserve，TritonServe，以及一些常见的推理框架。</p>
+
+  <div class="note-large blue">
+    <div class="notel-title rounded-t-lg p-3 font-bold text-lg flex flex-row gap-2 items-center">
+      <p>PS</p>
+
+    </div>
+    <div class="notel-content markdown-body">
+      <p>在写这篇推文的时候，TorchServe已经更新了一个公告，未来不会继续维护TorchServe这个仓库，感觉写着写着要给每一个曾经出现的推理框架进行一个一个祷告，但总之先开这个系列来介绍。</p>
+
+    </div>
+  </div>
+
+<p>为了澄清一下概念：首先推理系统&#x2F;本身是涵盖很多东西的，提供服务只是他对外所看到的一面，而如何提供服务，深度学习模型如何推理，背后需要用到推理引擎，还有现在的LLM大模型，VLLM的推理算法等，有时候还需要针对模型做优化，有模型结构上的优化，有基于硬件的模型计算优化等。</p>
+<p>总之这一块并没有那么简单，后续就是遇到了就会额外说一下。</p>
+<h1 id="2-TorchServe的介绍与快速入门"><a href="#2-TorchServe的介绍与快速入门" class="headerlink" title="2 TorchServe的介绍与快速入门"></a>2 TorchServe的介绍与快速入门</h1><h2 id="2-1-TorchServe的背景"><a href="#2-1-TorchServe的背景" class="headerlink" title="2.1 TorchServe的背景"></a>2.1 TorchServe的背景</h2><p>官方代码仓库：[链接](pytorch&#x2F;serve: Serve, optimize and scale PyTorch models in production)，实际上安装TorchServe是很简单的，它所需要的依赖很少，就是服务端的jdk-17和框架的一些基础依赖，不要求有推理引擎比如Pytorch，huggingface。</p>
+<p>根据个人的<a class="link"   target="_blank" rel="noopener" href="https://www.zhihu.com/question/389731764/answer/1201343082" >调研<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>，其实TorchServe一开始在2020年4月份出场就不被大家看好，从目前的最新消息，已经公布不会再进行更新来看，确实如此，经过了不到5年的时间TrochServe更新到0.12版本就已经停止更新了。</p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="/images/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%8E%A8%E7%90%86%E7%B3%BB%E7%BB%9F%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9ATorchServe%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/%E6%9B%B4%E6%96%B0%E5%85%AC%E5%91%8A.png"
+                      alt="更新公告"
+                ></p>
+<p><img  
+                     lazyload
+                     src="/images/loading.svg"
+                     data-src="/images/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%8E%A8%E7%90%86%E7%B3%BB%E7%BB%9F%EF%BC%88%E4%B8%80%EF%BC%89%EF%BC%9ATorchServe%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8/%E4%B8%8D%E5%86%8D%E7%A7%AF%E6%9E%81%E7%BB%B4%E6%8A%A4.png"
+                      alt="不再积极维护"
+                ></p>
+<p>从个人的视角来猜测其被弃坑的情况，直接原因是团队对这一块的已经没有精力维护，后续的更新也只是维护这个框架的漏洞，但我个人的猜测更多是，在2020年的深度学习模型主要还是以小模型为主，而在2023年以后，大模型的兴起，使得之前这种基于小模型推理的框架很难适应大模型推理的到来，特别是，该框架在个人使用的过程中，他的推理引擎实际上可以用各种引擎，不止Pytorch本身。</p>
+<p>虽然叫做TorchServe，但实际上没有Pytorch作为引擎推理模型也是可以的，所以换句话说，虽然网上大部分材料说该框架限制在Pytorch引擎，但由于其本质上是启动Java作为服务端和python运行模型程序，而只需要符合TorchServe框架的模型推理规范文件即可。</p>
+<p>话不多说，开始介绍本文的主角TorchServe吧。</p>
+<h2 id="2-2-TorchServe入门前的碎碎念"><a href="#2-2-TorchServe入门前的碎碎念" class="headerlink" title="2.2 TorchServe入门前的碎碎念"></a>2.2 TorchServe入门前的碎碎念</h2><p>如果是23年之前，我可能会以TorchServe的官方<a class="link"   target="_blank" rel="noopener" href="https://github.com/pytorch/serve/blob/master/docs/getting_started.md" >Get Start<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>进行介绍并快速入门TorchServe。</p>
+<p>现在的“不再积极维护”其实也可以预见，相关的资料可能存在与当前版本对不上的情况，这就导致Github的教程实际上和官网Pytorch的教程是存在偏差的，具体来说，是因为后续更新中增加了一个安全策略，使得一些命令不能直接使用，所以最终导致的结果就是无法直接调用模型服务。</p>
+<p>此外，由于之前在2020年左右，深度学习领域主要还是以小模型为主（其特点有，占用显存小，可以做batch多个输入合并计算等特点），所以利用TorchServe开发模型的思路主要是以小模型为主，比如教程所述的图像分类的模型，通过torch-model-archiver将其压入.mar文件，方便在后续的torchserve中启动。</p>
+<p>但是在2023年以后，或者说，深度学习存在一个特点是，当模型参数越多的时候在有充足的数据下是能够越做越好，虽然能够越做越好，但存在的一个问题是：模型也越来越大，所以如果你在2023年入门推理框架，并且选择了TorchServe，那么你甚至不能按照当前的教程直接部署大参数的深度学习，比如3B，7B，13B等，因为这些模型文件本身就有几G，导致你在构建.mar时候，由于本质上.mar是将模型文件压缩在.mar文件里面以及在后续部署的时候将.mar解压执行对应的文件。这就导致，不仅.mar文件特别大移动困难，且在部署的时候，还需要从.mar中解压出对应的模型文件，这需要大量的时间。</p>
+<p>所以如果是2023年以后再来入门TorchServe，就根本不能从.mar文件出发，那应该如何做才能部署大参数模型呢？其实TorchServe在github仓库中给出了一些解决方案，因为TorchServe已经是支持大参数模型的构建，比如扩散模型，比如LLM，所以我们仍然能够通过TorchServe构建大参数模型的推理服务。</p>
+<p>接下来就是介绍一个快速入门的方式，不得不说，在写这份入门经验，刚好看到TorchServe更新不再积极维护，或许这份入门教材可以生存很久。</p>
+<h2 id="2-3-TorchServe的快速入门与开发指南"><a href="#2-3-TorchServe的快速入门与开发指南" class="headerlink" title="2.3 TorchServe的快速入门与开发指南"></a>2.3 TorchServe的快速入门与开发指南</h2><p>在这里以TorchServe官方所提供的案例huggingface_Transformers作为例子快速入门与开发：<a class="link"   target="_blank" rel="noopener" href="https://github.com/pytorch/serve/tree/master/examples/Huggingface_Transformers" >案例代码<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>。同时，通过这份案例就能够知道，为什么TorchServe本身并不限制Pytorch作为推理引擎，事实上它是支持其他深度学习引擎比如huggingface等。</p>
+<p>首先，从这份例子以及<code>README.md</code>文档能够了解如何开发，首先，该模型是一个Transformer模型，该模型支持多个功能，比如序列分类、QA、Token分类和对话等功能，但是在部署的时候，只能选择一个模型功能，为什么呢？</p>
+<p>这就要说到，TorchServe真正的处理逻辑是带handler的python代码文件，里面已经说清楚了该模型的处理逻辑，而model-config.yaml则配置模型的参数文件，通过加载配置文件就已经确定了当前模型的功能，比如这份文档的默认参数配置：<code>mode: sequence_classification</code>。</p>
+<p>换句话说，我们在开发我们的模型的时候，主要就是符合handler.py的形式，通过<code>torch-model-archiver</code>命令将我们的模型文件打包即可。<br>	那么首先我们先来看给出案例的handler是什么？这里列出handle.py必要的形式：</p>
+<div class="code-container" data-rel="Python"><figure class="iseeu highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> ts.torch_handler.base_handler <span class="keyword">import</span> BaseHandler</span><br><span class="line"><span class="comment"># 基础库加载</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">TransformersSeqClassifierHandler</span>(<span class="title class_ inherited__">BaseHandler</span>):</span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">__init__</span>(<span class="params">self</span>):</span><br><span class="line">        <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">        这里是整类的初始化，主要是做参数上的初始化，可以省略</span></span><br><span class="line"><span class="string">        &#x27;&#x27;&#x27;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">initialize</span>(<span class="params">self, ctx</span>):</span><br><span class="line">        <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">        这里是服务的初始化，其中ctx就是传入控制模型的参数。</span></span><br><span class="line"><span class="string">        ctx读取的是目录下指定的配置文件信息config.yaml</span></span><br><span class="line"><span class="string">        通过该配置信息就能够控制模型，包括模型的worker、batchsize，以及模型本身的自定义参数。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        定位：通过配置信息初始化模型服务。</span></span><br><span class="line"><span class="string">        &#x27;&#x27;&#x27;</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">preprocess</span>(<span class="params">self, requests</span>):</span><br><span class="line">        <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">        这里是模型的预处理，都是也是请求传入的接口。</span></span><br><span class="line"><span class="string">        requests与python自带解析API请求的requests是类似的，传入的是字典，通过API固定下来。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        定位：对用户请求进行预处理。</span></span><br><span class="line"><span class="string">        &#x27;&#x27;&#x27;</span></span><br><span class="line">        <span class="keyword">return</span> <span class="comment"># 返回处理结果，会抵达下面的inference函数</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">inference</span>(<span class="params">self, input_batch</span>):</span><br><span class="line">        <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">        这里部分是模型推理部分，input_batch就是预处理函数处理以后所返回的结果。</span></span><br><span class="line"><span class="string">        所以经常，如果我们所使用的引擎比如pytorch，为了减少计算，比如梯度等加快推理，所以在这里就可以使用no_grad等函数进行包装。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        定位：对请求进行模型推理。</span></span><br><span class="line"><span class="string">        &#x27;&#x27;&#x27;</span></span><br><span class="line">        <span class="keyword">return</span> inferences</span><br><span class="line"></span><br><span class="line">    <span class="keyword">def</span> <span class="title function_">postprocess</span>(<span class="params">self, inference_output</span>):</span><br><span class="line">        <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">        定位：对推理结果进行后处理，返回给用户</span></span><br><span class="line"><span class="string">        &#x27;&#x27;&#x27;</span></span><br><span class="line">        <span class="keyword">return</span> inference_output</span><br></pre></td></tr></table></figure></div>
+<p>通过上述的handler.py的关键形式，就能够快速理解TorchServe每一个服务的处理逻辑，而开发的时候也可以按照这样的逻辑进行开发，对每一个用户请求进行前处理，模型推理以及后处理三阶段进行处理。</p>
+<p>接着构建好你的模型处理逻辑以后，就需要将其进行打包，以便后续模型启动的时候能够识别模型处理逻辑文件，此时使用的就是<code>model-archiver</code>进行打包，通过该命令能够将相关的文件进行打包处理。</p>
+<p><code>model-archiver</code>的命令参数含义在<a class="link"   target="_blank" rel="noopener" href="https://github.com/pytorch/serve/tree/master/model-archiver" >链接<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>可以看到。注意到archive-format参数，有四种选择，就可以选择<code>no-archive</code>选项，虽然进行打包了但并没有真的进行压缩，该参数实际上只会输出一个文件夹，而该文件夹实际上就是之前内容的复制，从这里可以看出，如果使用其他选项打包成单独压缩文件，本质上就是将这些文件进行整理打包以不遗漏组件能够快速启动，有一种文件版的docker镜像的样子。</p>
+<p>从docker的视角来看，此时就相当于将程序必要的文件进行整理与打包，在后续的启动中能够完整启动。如果是小文件，这一点没有问题，但是当我们的模型文件特别大的时候，哪怕使用了压缩都需要很长的时间，这可能就不是一个很好地方式，类似docker也不会将数据文件打包进入docker镜像。</p>
+<p>那么打包以后，我们就可以利用<code>trochserve</code>命令启动从而执行我们的逻辑函数，进而部署我们模型以提供服务。TorchServe命令本身也有一些配置文件，需要配置，具体和后面的略微进阶一块说。</p>
+<p>TorchServe的API提供三种方式，默认端口是8080和8081，其中8080为模型推理端口，8081为模型管理端口，具体可参考文档：<a class="link"   target="_blank" rel="noopener" href="https://github.com/pytorch/serve/blob/master/docs/inference_api.md" >inference_api<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>和<a class="link"   target="_blank" rel="noopener" href="https://github.com/pytorch/serve/blob/master/docs/management_api.md" >management_api<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>。</p>
+<p>作为基础入门就已经可以结束了。</p>
+<h2 id="2-4-略微进阶"><a href="#2-4-略微进阶" class="headerlink" title="2.4 略微进阶"></a>2.4 略微进阶</h2><p>如果只是完场上述的流程，那么只是利用了这个TorchServe开启了一个模型，如果仅此而已，那么与自定义的Fastapi或者Flask然后再部署对应的模型其实没有本质上的区别。可能会说，TorchServe是不是提供了模型优化，比如可以使用<code>torchscript</code>或者<code>torch.compile</code>对模型进行编译从而加速？亦或是采用<code>onnx</code>，<code>torch-TensorRT</code>对模型加速等等，所以使用这个框架就能够得到更好地性能？</p>
+<p>事实上，上述的模型优化，在Fastapi和Flask上依然可以使用，所以这并不是这个框架的特点。这也是为什么个人认为，从这个框架入手是一个相对平缓的方式。这个框架除了提供一般的组件，比如模型打包，规范API等功能，更重要一点也是提供了规范编写模型处理服务的框架，即handler.py的文件中的类handler。</p>
+<p>除此之外，自然该框架还有其他的特点：</p>
+
+  <div class="note-large yellow">
+    <div class="notel-title rounded-t-lg p-3 font-bold text-lg flex flex-row gap-2 items-center">
+      <p>推理框架所提供的特性</p>
+
+    </div>
+    <div class="notel-content markdown-body">
+      <ol>
+<li><p>模型多副本worker。为了缓解用户请求的需求量，我们可以简单地启动多个模型副本为用户提供服务，且用户请求能够较好地分配到不同的服务上。单纯使用Fastapi和Flask实现起来就会比较复杂，是因为这是超越Fastapi和flask的逻辑，他们只负责一个服务，而无多服务之间的调度逻辑。</p>
+</li>
+<li><p>合并请求。有一些深度学习模型，实际上是可以一次性处理多个请求需求，比如图像分类服务，多个图片通过预处理进行变换成同大小的图片，就可以让模型一次性处理多张图片共同返回请求从而提高模型本身的吞吐量。</p>
+</li>
+<li><p>在用户请求较多的时候，通过判断请求时延来推断worker的负载情况，从而自动伸缩对应的worker数量，以缓解短时间来的请求过多的任务，比如休息时间请求较少，而工作时间请求较多的情况。</p>
+</li>
+<li><p>自动选择GPU启动模型。很多时候，我们的模型都需要GPU才能够启动，而TorchServe提供一个自动选择GPU的方式来启动我们的模型，一般都是均匀分配的，所以能够平缓地使用GPU资源。</p>
+</li>
+</ol>
+
+    </div>
+  </div>
+
+<p>那么如何控制，有什么参数，实际上上述的例子已经有告诉大家了，可以看这个来获得所有参数的含义，可以参考：<a class="link"   target="_blank" rel="noopener" href="https://www.cnblogs.com/IllidanStormrage/articles/16374146.html" >链接<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a>。</p>
+<p>在这里主要是做一个提醒：有一些配置是启动TorchServe的配置，而有一些配置是针对模型本身的配置，这两点是需要分清楚的。</p>
+<h1 id="3-题外话"><a href="#3-题外话" class="headerlink" title="3 题外话"></a>3 题外话</h1><p>其实本来是想仔细写好TorchServe的入门介绍的，因为就我个人经验来看，TorchServe应该是最简单以及最快能够体验并且理解推理系统的作用的。同时其安装比较简单，哪怕不使用docker也能够快速安装，因为它本质上是与其他推理引擎分隔开来的。</p>
+<p>甚至我们可以来讨论一下，为什么TorchServe要停止更新了：个人的观点——从一开始就是爹不亲妈不爱的状况。</p>
+<p>首先，虽然TorchServe名义上是在Pytorch下面的一个代码库，为Pytorch服务，但它本身也可以脱离Pytorch的推理引擎，那么从另一方面来说，框架本身并没有和Pytorch很好地融合起来（比如推理加速，更底层地优化等），而只是提供了一个基础的推理特性，这个特性在其他的推理框架上都存在，甚至做得更好，</p>
+<p>其次，推理框架一开始的出发点是小模型的快速部署，做了模型打包，模型工作流，以及常见的模型类，分类，回归等，在现代大参数模型的背景下都没人关注。</p>
+<p>所以，最终迎来了自己终结（不再积极维护）的结局。</p>
+<p>但是，如果是想要入门推理框架，TorchServe作为一个拥有基础推理框架特性且安装简单。对于小白来说，快速熟悉框架特性是一个比较不错的选择。当然，作为生产力工具，其仍然面临自己的问题，比如多模型的部署，多个模型之间如何配合，以及上述的端口请求如何合并，多个模型的版本的管理（主要是以文件的形式管理）所提供的支持都是比较弱的，当然，我们也可以这么说，我们只是写好服务，而至于API请求，模型管理应该交给其他组件来做，我们只需要负责模型服务的逻辑已经提供一个约定好的访问请求范式就好了。这当然也没有问题。</p>
+<p>但从生产的角度，特别是当前的模型服务提供厂商，这些又是必须要解决的问题，所以TorchServe确实处在一个尴尬的状况，最终也确实再难以维系下去…</p>
+
+		</div>
+
+		
+		<div class="post-copyright-info w-full my-8 px-2 sm:px-6 md:px-8">
+			<div class="article-copyright-info-container">
+    <ul>
+        <li><strong>标题:</strong> 深度学习推理系统（一）：TorchServe快速入门</li>
+        <li><strong>作者:</strong> Wings</li>
+        <li><strong>创建于
+                :</strong> 2025-03-30 10:08:38</li>
+        
+            <li>
+                <strong>更新于
+                    :</strong> 2025-12-16 23:57:36
+            </li>
+        
+        <li>
+            <strong>链接:</strong> https://www.wingslab.top/深度学习推理系统/深度学习推理系统（一）：TorchServe快速入门/
+        </li>
+        <li>
+            <strong>
+                版权声明:
+            </strong>
+            
+
+            
+                本文章采用 <a class="license" target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0">CC BY-NC-SA 4.0</a> 进行许可。
+            
+        </li>
+    </ul>
+</div>
+
+		</div>
+		
+
+		
+		<ul class="post-tags-box text-lg mt-1.5 flex-wrap justify-center flex md:hidden">
+			
+			<li class="tag-item mx-0.5">
+				<a href="/tags/%E6%8E%A8%E7%90%86%E7%B3%BB%E7%BB%9F/">#推理系统</a>&nbsp;
+			</li>
+			
+		</ul>
+		
+
+		
+
+		
+		<div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+			
+			<div class="article-prev border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="prev" rel="prev" href="/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%8E%A8%E7%90%86%E7%B3%BB%E7%BB%9F/%E6%96%B9%E5%90%91(%E9%83%A8%E7%BD%B2%E4%B8%8E%E6%8E%A8%E7%90%86)%E7%9A%84%E8%BD%AC%E5%8F%98%E8%AF%B4%E6%98%8E%E4%B8%8E%E6%95%B4%E7%90%86/">
+					<span class="left arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-left"></i>
+					</span>
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">方向(部署与推理)的转变说明与整理</span>
+						<span class="post-nav-item">上一篇</span>
+					</span>
+				</a>
+			</div>
+			
+			
+			<div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="next" rel="next" href="/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%8E%A8%E7%90%86%E7%B3%BB%E7%BB%9F/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B%E9%83%A8%E7%BD%B2%E6%B5%85%E6%80%9D/">
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">深度学习模型部署浅思</span>
+						<span class="post-nav-item">下一篇</span>
+					</span>
+					<span class="right arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-right"></i>
+					</span>
+				</a>
+			</div>
+			
+		</div>
+		
+
+
+		
+	</div>
+
+	
+	<div class="toc-content-container">
+		<div class="post-toc-wrap">
+	<div class="post-toc">
+		<div class="toc-title">目录</div>
+		<div class="page-title">深度学习推理系统（一）：TorchServe快速入门</div>
+		<ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6"><span class="nav-text">为什么需要推理框架</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-TorchServe%E7%9A%84%E4%BB%8B%E7%BB%8D%E4%B8%8E%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8"><span class="nav-text">2 TorchServe的介绍与快速入门</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1-TorchServe%E7%9A%84%E8%83%8C%E6%99%AF"><span class="nav-text">2.1 TorchServe的背景</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2-TorchServe%E5%85%A5%E9%97%A8%E5%89%8D%E7%9A%84%E7%A2%8E%E7%A2%8E%E5%BF%B5"><span class="nav-text">2.2 TorchServe入门前的碎碎念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3-TorchServe%E7%9A%84%E5%BF%AB%E9%80%9F%E5%85%A5%E9%97%A8%E4%B8%8E%E5%BC%80%E5%8F%91%E6%8C%87%E5%8D%97"><span class="nav-text">2.3 TorchServe的快速入门与开发指南</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-4-%E7%95%A5%E5%BE%AE%E8%BF%9B%E9%98%B6"><span class="nav-text">2.4 略微进阶</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E9%A2%98%E5%A4%96%E8%AF%9D"><span class="nav-text">3 题外话</span></a></li></ol>
+
+	</div>
+</div>
+	</div>
+	
+</div>
+			</div>
+
+			
+		</div>
+
+		<div class="main-content-footer">
+			<footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+              <span>2022</span>
+              -
+            
+            2025&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">Wings</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        共撰写了 8 篇文章
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+            <script data-swup-reload-script src="https://cn.vercount.one/js"></script>
+            <div class="relative text-center lg:absolute lg:right-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-right">
+                
+                    <span id="busuanzi_container_site_uv" class="lg:!block">
+                        <span class="text-sm">访问人数</span>
+                        <span id="busuanzi_value_site_uv"></span>
+                    </span>
+                
+                
+                    <span id="busuanzi_container_site_pv" class="lg:!block">
+                        <span class="text-sm">总访问量</span>
+                        <span id="busuanzi_value_site_pv"></span>
+                    </span>
+                
+            </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a> 驱动</span>
+            <span class="text-sm lg:block">主题&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.8.5</a></span>
+        </div>
+        
+        
+            <div>
+                博客已运行 <span class="odometer" id="runtime_days" ></span> 天 <span class="odometer" id="runtime_hours"></span> 小时 <span class="odometer" id="runtime_minutes"></span> 分钟 <span class="odometer" id="runtime_seconds"></span> 秒
+            </div>
+        
+        
+            <script data-swup-reload-script>
+                try {
+                    function odometer_init() {
+                    const elements = document.querySelectorAll('.odometer');
+                    elements.forEach(el => {
+                        new Odometer({
+                            el,
+                            format: '( ddd).dd',
+                            duration: 200
+                        });
+                    });
+                    }
+                    odometer_init();
+                } catch (error) {}
+            </script>
+        
+        
+        
+    </div>  
+</footer>
+		</div>
+	</div>
+
+	
+	<div class="post-tools">
+		<div class="post-tools-container">
+	<ul class="article-tools-list">
+		<!-- TOC aside toggle -->
+		
+		<li class="right-bottom-tools page-aside-toggle">
+			<i class="fa-regular fa-outdent"></i>
+		</li>
+		
+
+		<!-- go comment -->
+		
+	</ul>
+</div>
+	</div>
+	
+
+	<div class="right-side-tools-container">
+		<div class="side-tools-container">
+	<ul class="hidden-tools-list">
+		<li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-plus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-minus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+			<i class="fa-regular fa-moon"></i>
+		</li>
+
+		<!-- rss -->
+		
+
+		
+
+		<li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+			<i class="fa-regular fa-arrow-down"></i>
+		</li>
+	</ul>
+
+	<ul class="visible-tools-list">
+		<li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+			<i class="fa-regular fa-cog fa-spin"></i>
+		</li>
+		
+		<li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+			<i class="arrow-up fas fa-arrow-up"></i>
+			<span class="percent"></span>
+		</li>
+		
+		
+	</ul>
+</div>
+	</div>
+
+	<div class="image-viewer-container">
+	<img src="">
+</div>
+
+	
+	<div class="search-pop-overlay">
+	<div class="popup search-popup">
+		<div class="search-header">
+			<span class="search-input-field-pre">
+				<i class="fa-solid fa-keyboard"></i>
+			</span>
+			<div class="search-input-container">
+				<input autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="站内搜索您需要的内容..." spellcheck="false" type="search" class="search-input">
+			</div>
+			<span class="popup-btn-close">
+				<i class="fa-solid fa-times"></i>
+			</span>
+		</div>
+		<div id="search-result">
+			<div id="no-result">
+				<i class="fa-solid fa-spinner fa-spin-pulse fa-5x fa-fw"></i>
+			</div>
+		</div>
+	</div>
+</div>
+	
+
+</main>
+
+
+
+<script src="/js/build/libs/Swup.min.js"></script>
+
+<script src="/js/build/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/build/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    const swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+</script>
+
+
+
+
+	
+<script src="/js/build/tools/imageViewer.js" type="module"></script>
+
+<script src="/js/build/utils.js" type="module"></script>
+
+<script src="/js/build/main.js" type="module"></script>
+
+<script src="/js/build/layouts/navbarShrink.js" type="module"></script>
+
+<script src="/js/build/tools/scrollTopBottom.js" type="module"></script>
+
+<script src="/js/build/tools/lightDarkSwitch.js" type="module"></script>
+
+<script src="/js/build/layouts/categoryList.js" type="module"></script>
+
+
+
+    
+<script src="/js/build/tools/localSearch.js" type="module"></script>
+
+
+
+
+    
+<script src="/js/build/tools/codeBlock.js" type="module"></script>
+
+
+
+
+    
+<script src="/js/build/layouts/lazyload.js" type="module"></script>
+
+
+
+
+    
+<script src="/js/build/tools/runtime.js"></script>
+
+    
+<script src="/js/build/libs/odometer.min.js"></script>
+
+    
+<link rel="stylesheet" href="/assets/odometer-theme-minimal.css">
+
+
+
+
+  
+<script src="/js/build/libs/Typed.min.js"></script>
+
+  
+<script src="/js/build/plugins/typed.js" type="module"></script>
+
+
+
+
+
+
+
+
+    
+<script src="/js/build/libs/anime.min.js"></script>
+
+
+
+
+
+    
+<script src="/js/build/tools/tocToggle.js" type="module" data-swup-reload-script=""></script>
+
+<script src="/js/build/layouts/toc.js" type="module" data-swup-reload-script=""></script>
+
+<script src="/js/build/plugins/tabs.js" type="module" data-swup-reload-script=""></script>
+
+
+
+
+<script src="/js/build/libs/moment-with-locales.min.js" data-swup-reload-script=""></script>
+
+
+<script src="/js/build/layouts/essays.js" type="module" data-swup-reload-script=""></script>
+
+
+
+
+
+	
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+
+</html>
