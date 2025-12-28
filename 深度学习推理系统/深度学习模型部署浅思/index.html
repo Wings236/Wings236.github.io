@@ -751,7 +751,8 @@ mjx-container[display="true"] + br {
 <p>不过，在这里可以略微改进一点的是，增加一个等待请求池，其功能是在模型正在处理当前用户需求的情况下，将新来的用户请求放入等待请求池，给定一个批次（batch），每次取这些批次的请求一起丢入模型进行处理，增大整个模型运行的吞吐量。</p>
 <h3 id="二、前端-API-模型"><a href="#二、前端-API-模型" class="headerlink" title="二、前端 + API + 模型"></a>二、前端 + API + 模型</h3><p>（由于这里主要讨论的是Web服务，事实上，在这里还有另一种提供服务的方式是，开发桌面应用程序，应用程序启动的时候，模型也启动，并且根据对应的电脑硬件选择CPU还是GPU运行。）<br>Gradio虽然提供了一个快速开发前端界面的功能，但是对真实场景的前端需求是不足以满足涉及需求的，因为Gradio设计初衷仅仅只是能够让模型能够有一个基础的交互界面，事实上并不能作为“真正”的前端开发工具。所以为了能够提供给用户一个更好的交互界面，当然仍需要回到传统的前端开发框架上。</p>
 <p>那么这里就需要不同语言之间进行交互，因为传统的前端开发经常使用Vue.js + Java，而由于大部分的深度学习是基于python代码，所以对于模型的运行和部署主要还是在python代码上，就需要从python代码中提供API服务，常见的有Flask和Fastapi快速提供一个可用的API接口，以供前端调用。</p>
-<p>不过在这里，还可以理解其他情况：<br>
+<p>不过在这里，还可以理解其他情况：</p>
+
   <div class="note-large blue">
     <div class="notel-title rounded-t-lg p-3 font-bold text-lg flex flex-row gap-2 items-center">
       <p>两种情况</p>
@@ -766,7 +767,8 @@ mjx-container[display="true"] + br {
 </ol>
 
     </div>
-  </div></p>
+  </div>
+
 <p>其实走到这一步，已经基本上满足大部分应用的开发需求，因为只需要将模型看做是一个代码中的一个处理函数，就可以融入到之前的开发思路上。</p>
 <p>但从实际的场景来看，由于深度学习模型本身参数较大，特别是在2023年开启的大模型时代，虽然其模型能力很强，但其运行成本也相对传统的算法处理函数更多。所以在实际开发中，就不得不需要考虑运行模型所带来的成本问题，以及如何降低模型运行的成本。</p>
 <p>同时由于深度学习模型存在批次问题，或者说，由于大部分的深度学习是矩阵乘积的形式：<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.464ex;" xmlns="http://www.w3.org/2000/svg" width="17.215ex" height="2.413ex" role="img" focusable="false" viewBox="0 -861.5 7609.2 1066.5"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="mi"><path data-c="1D466" d="M21 287Q21 301 36 335T84 406T158 442Q199 442 224 419T250 355Q248 336 247 334Q247 331 231 288T198 191T182 105Q182 62 196 45T238 27Q261 27 281 38T312 61T339 94Q339 95 344 114T358 173T377 247Q415 397 419 404Q432 431 462 431Q475 431 483 424T494 412T496 403Q496 390 447 193T391 -23Q363 -106 294 -155T156 -205Q111 -205 77 -183T43 -117Q43 -95 50 -80T69 -58T89 -48T106 -45Q150 -45 150 -87Q150 -107 138 -122T115 -142T102 -147L99 -148Q101 -153 118 -160T152 -167H160Q177 -167 186 -165Q219 -156 247 -127T290 -65T313 -9T321 21L315 17Q309 13 296 6T270 -6Q250 -11 231 -11Q185 -11 150 11T104 82Q103 89 103 113Q103 170 138 262T173 379Q173 380 173 381Q173 390 173 393T169 400T158 404H154Q131 404 112 385T82 344T65 302T57 280Q55 278 41 278H27Q21 284 21 287Z"></path></g><g data-mml-node="mo" transform="translate(767.8,0)"><path data-c="3D" d="M56 347Q56 360 70 367H707Q722 359 722 347Q722 336 708 328L390 327H72Q56 332 56 347ZM56 153Q56 168 72 173H708Q722 163 722 153Q722 140 707 133H70Q56 140 56 153Z"></path></g><g data-mml-node="mi" transform="translate(1823.6,0)"><path data-c="1D465" d="M52 289Q59 331 106 386T222 442Q257 442 286 424T329 379Q371 442 430 442Q467 442 494 420T522 361Q522 332 508 314T481 292T458 288Q439 288 427 299T415 328Q415 374 465 391Q454 404 425 404Q412 404 406 402Q368 386 350 336Q290 115 290 78Q290 50 306 38T341 26Q378 26 414 59T463 140Q466 150 469 151T485 153H489Q504 153 504 145Q504 144 502 134Q486 77 440 33T333 -11Q263 -11 227 52Q186 -10 133 -10H127Q78 -10 57 16T35 71Q35 103 54 123T99 143Q142 143 142 101Q142 81 130 66T107 46T94 41L91 40Q91 39 97 36T113 29T132 26Q168 26 194 71Q203 87 217 139T245 247T261 313Q266 340 266 352Q266 380 251 392T217 404Q177 404 142 372T93 290Q91 281 88 280T72 278H58Q52 284 52 289Z"></path></g><g data-mml-node="mi" transform="translate(2395.6,0)"><path data-c="1D434" d="M208 74Q208 50 254 46Q272 46 272 35Q272 34 270 22Q267 8 264 4T251 0Q249 0 239 0T205 1T141 2Q70 2 50 0H42Q35 7 35 11Q37 38 48 46H62Q132 49 164 96Q170 102 345 401T523 704Q530 716 547 716H555H572Q578 707 578 706L606 383Q634 60 636 57Q641 46 701 46Q726 46 726 36Q726 34 723 22Q720 7 718 4T704 0Q701 0 690 0T651 1T578 2Q484 2 455 0H443Q437 6 437 9T439 27Q443 40 445 43L449 46H469Q523 49 533 63L521 213H283L249 155Q208 86 208 74ZM516 260Q516 271 504 416T490 562L463 519Q447 492 400 412L310 260L413 259Q516 259 516 260Z"></path></g><g data-mml-node="mo" transform="translate(3145.6,0)"><path data-c="2C" d="M78 35T78 60T94 103T137 121Q165 121 187 96T210 8Q210 -27 201 -60T180 -117T154 -158T130 -185T117 -194Q113 -194 104 -185T95 -172Q95 -168 106 -156T131 -126T157 -76T173 -3V9L172 8Q170 7 167 6T161 3T152 1T140 0Q113 0 96 17Z"></path></g><g data-mml-node="mi" transform="translate(3590.2,0)"><path data-c="1D465" d="M52 289Q59 331 106 386T222 442Q257 442 286 424T329 379Q371 442 430 442Q467 442 494 420T522 361Q522 332 508 314T481 292T458 288Q439 288 427 299T415 328Q415 374 465 391Q454 404 425 404Q412 404 406 402Q368 386 350 336Q290 115 290 78Q290 50 306 38T341 26Q378 26 414 59T463 140Q466 150 469 151T485 153H489Q504 153 504 145Q504 144 502 134Q486 77 440 33T333 -11Q263 -11 227 52Q186 -10 133 -10H127Q78 -10 57 16T35 71Q35 103 54 123T99 143Q142 143 142 101Q142 81 130 66T107 46T94 41L91 40Q91 39 97 36T113 29T132 26Q168 26 194 71Q203 87 217 139T245 247T261 313Q266 340 266 352Q266 380 251 392T217 404Q177 404 142 372T93 290Q91 281 88 280T72 278H58Q52 284 52 289Z"></path></g><g data-mml-node="mo" transform="translate(4440,0)"><path data-c="2208" d="M84 250Q84 372 166 450T360 539Q361 539 377 539T419 540T469 540H568Q583 532 583 520Q583 511 570 501L466 500Q355 499 329 494Q280 482 242 458T183 409T147 354T129 306T124 272V270H568Q583 262 583 250T568 230H124V228Q124 207 134 177T167 112T231 48T328 7Q355 1 466 0H570Q583 -10 583 -20Q583 -32 568 -40H471Q464 -40 446 -40T417 -41Q262 -41 172 45Q84 127 84 250Z"></path></g><g data-mml-node="msup" transform="translate(5384.8,0)"><g data-mml-node="mi"><path data-c="1D445" d="M230 637Q203 637 198 638T193 649Q193 676 204 682Q206 683 378 683Q550 682 564 680Q620 672 658 652T712 606T733 563T739 529Q739 484 710 445T643 385T576 351T538 338L545 333Q612 295 612 223Q612 212 607 162T602 80V71Q602 53 603 43T614 25T640 16Q668 16 686 38T712 85Q717 99 720 102T735 105Q755 105 755 93Q755 75 731 36Q693 -21 641 -21H632Q571 -21 531 4T487 82Q487 109 502 166T517 239Q517 290 474 313Q459 320 449 321T378 323H309L277 193Q244 61 244 59Q244 55 245 54T252 50T269 48T302 46H333Q339 38 339 37T336 19Q332 6 326 0H311Q275 2 180 2Q146 2 117 2T71 2T50 1Q33 1 33 10Q33 12 36 24Q41 43 46 45Q50 46 61 46H67Q94 46 127 49Q141 52 146 61Q149 65 218 339T287 628Q287 635 230 637ZM630 554Q630 586 609 608T523 636Q521 636 500 636T462 637H440Q393 637 386 627Q385 624 352 494T319 361Q319 360 388 360Q466 361 492 367Q556 377 592 426Q608 449 619 486T630 554Z"></path></g><g data-mml-node="TeXAtom" transform="translate(792,363) scale(0.707)" data-mjx-texclass="ORD"><g data-mml-node="TeXAtom" data-mjx-texclass="ORD"><g data-mml-node="mi"><path data-c="42" d="M304 342Q292 342 292 353Q292 372 323 391Q331 396 417 428T533 487Q563 512 563 555V562Q563 575 557 589T530 618T475 636Q429 636 396 613T330 539Q263 446 210 238Q196 183 173 120Q135 31 121 16Q108 1 85 -10T47 -22T32 -10Q32 -5 44 18T77 93T112 206Q135 296 154 395T182 550T191 615Q191 616 190 616Q188 616 179 611T157 601T131 594Q113 594 113 605Q113 623 144 644Q154 650 205 676T267 703Q277 705 279 705Q295 705 295 693Q295 686 288 635T278 575Q278 572 287 582Q336 635 402 669T540 704Q603 704 633 673T664 599Q664 559 638 523T580 462Q553 440 504 413L491 407L504 402Q566 381 596 338T627 244Q627 172 575 110T444 13T284 -22Q208 -22 158 28Q144 42 146 50Q150 67 178 85T230 103Q236 103 246 95T267 75T302 56T357 47Q436 47 486 93Q526 136 526 198V210Q526 228 518 249T491 292T436 330T350 345Q335 345 321 344T304 342Z"></path></g></g><g data-mml-node="mo" transform="translate(657,0)"><path data-c="D7" d="M630 29Q630 9 609 9Q604 9 587 25T493 118L389 222L284 117Q178 13 175 11Q171 9 168 9Q160 9 154 15T147 29Q147 36 161 51T255 146L359 250L255 354Q174 435 161 449T147 471Q147 480 153 485T168 490Q173 490 175 489Q178 487 284 383L389 278L493 382Q570 459 587 475T609 491Q630 491 630 471Q630 464 620 453T522 355L418 250L522 145Q606 61 618 48T630 29Z"></path></g><g data-mml-node="mi" transform="translate(1435,0)"><path data-c="1D451" d="M366 683Q367 683 438 688T511 694Q523 694 523 686Q523 679 450 384T375 83T374 68Q374 26 402 26Q411 27 422 35Q443 55 463 131Q469 151 473 152Q475 153 483 153H487H491Q506 153 506 145Q506 140 503 129Q490 79 473 48T445 8T417 -8Q409 -10 393 -10Q359 -10 336 5T306 36L300 51Q299 52 296 50Q294 48 292 46Q233 -10 172 -10Q117 -10 75 30T33 157Q33 205 53 255T101 341Q148 398 195 420T280 442Q336 442 364 400Q369 394 369 396Q370 400 396 505T424 616Q424 629 417 632T378 637H357Q351 643 351 645T353 664Q358 683 366 683ZM352 326Q329 405 277 405Q242 405 210 374T160 293Q131 214 119 129Q119 126 119 118T118 106Q118 61 136 44T179 26Q233 26 290 98L298 109L352 326Z"></path></g></g></g></g></g></svg></mjx-container>，在较小的<mjx-container class="MathJax" jax="SVG"><svg style="vertical-align: -0.05ex;" xmlns="http://www.w3.org/2000/svg" width="1.486ex" height="1.645ex" role="img" focusable="false" viewBox="0 -705 657 727"><g stroke="currentColor" fill="currentColor" stroke-width="0" transform="scale(1,-1)"><g data-mml-node="math"><g data-mml-node="TeXAtom" data-mjx-texclass="ORD"><g data-mml-node="mi"><path data-c="42" d="M304 342Q292 342 292 353Q292 372 323 391Q331 396 417 428T533 487Q563 512 563 555V562Q563 575 557 589T530 618T475 636Q429 636 396 613T330 539Q263 446 210 238Q196 183 173 120Q135 31 121 16Q108 1 85 -10T47 -22T32 -10Q32 -5 44 18T77 93T112 206Q135 296 154 395T182 550T191 615Q191 616 190 616Q188 616 179 611T157 601T131 594Q113 594 113 605Q113 623 144 644Q154 650 205 676T267 703Q277 705 279 705Q295 705 295 693Q295 686 288 635T278 575Q278 572 287 582Q336 635 402 669T540 704Q603 704 633 673T664 599Q664 559 638 523T580 462Q553 440 504 413L491 407L504 402Q566 381 596 338T627 244Q627 172 575 110T444 13T284 -22Q208 -22 158 28Q144 42 146 50Q150 67 178 85T230 103Q236 103 246 95T267 75T302 56T357 47Q436 47 486 93Q526 136 526 198V210Q526 228 518 249T491 292T436 330T350 345Q335 345 321 344T304 342Z"></path></g></g></g></g></svg></mjx-container>下，模型运行时间是差不多，因为此时的计算瓶颈仍然是通信瓶颈，所以同时处理更多的数据并不会增加模型的处理时间。</p>
@@ -774,7 +776,8 @@ mjx-container[display="true"] + br {
 <p>当然，这些事情的考虑在模型服务提供厂商来说都可以解决，换句话说，如果负责前端开发就不需要关心这些事情，但如果需要自主模型部署则需要考虑。</p>
 <h3 id="三、前端-模型推理框架"><a href="#三、前端-模型推理框架" class="headerlink" title="三、前端 + 模型推理框架"></a>三、前端 + 模型推理框架</h3><p>所以，如果需要做到一个企业级的模型运行服务，或者至少能够尽可能让设备运行起来的服务，在这里就可以采用模型推理框架。</p>
 <p>相关的模型推理框架一方面能够快速提供对应的API服务，同时针对模型的批次特点进行优化，同时对多个模型运行有负载均衡和调度的优化，能够根据当前硬件资源进行自主调度。但最现实的情况也是，当硬件性能有限的情况下，留给调度和性能平衡的空间就越小，硬件资源多的情况下，留给平衡的空间就大。</p>
-<p>在这里简单列一下深度学习模型需要的推理服务框架的特点（不一定全）：<br>
+<p>在这里简单列一下深度学习模型需要的推理服务框架的特点（不一定全）：</p>
+
   <div class="note-large blue">
     <div class="notel-title rounded-t-lg p-3 font-bold text-lg flex flex-row gap-2 items-center">
       <p>特点</p>
@@ -782,8 +785,10 @@ mjx-container[display="true"] + br {
     </div>
     <div class="notel-content markdown-body">
       <ul>
-<li><strong>能够合并请求在一个批次中进行推理</strong>。这应该是最常见的需求，不管是从训练的角度来说，模型可以一次性计算多个批次的数据，还是有强大计算能力的GPU，它在运行模型，可以一次性计算多个批次的数据而不影响模型推理速度，合并请求在一个批次都应该是一个很重要的能力。</li>
-<li><strong>热启动模型</strong>。与Flask和FastAPI不一样的是，推理服务框架本身可以单独启动，中间的模型可以在服务框架启动以后再进行启动，或启动以后注销。这能够加速模型服务的开发。</li>
+<li><p><strong>能够合并请求在一个批次中进行推理</strong>。这应该是最常见的需求，不管是从训练的角度来说，模型可以一次性计算多个批次的数据，还是有强大计算能力的GPU，它在运行模型，可以一次性计算多个批次的数据而不影响模型推理速度，合并请求在一个批次都应该是一个很重要的能力。</p>
+</li>
+<li><p><strong>热启动模型</strong>。与Flask和FastAPI不一样的是，推理服务框架本身可以单独启动，中间的模型可以在服务框架启动以后再进行启动，或启动以后注销。这能够加速模型服务的开发。</p>
+</li>
 <li><p><strong>支持模型优化</strong>。由于模型推理服务，是不会有类似模型训练一样，需要梯度计算（但有一些服务提供微调服务，是需要这部分的内容的。）所以可以节省一定的计算量。类似地，如何更好地与硬件结合起来也是当前主流的研究方向，类似支持onnx等格式转换和运行。只不过有一些情况，相关硬件和推理框架配合得不是特别好，只能使用一个比较低效方式运行模型。</p>
 </li>
 <li><p><strong>支持模型前后处理</strong>。类似CV模型，传入的图片数据需要做变换，以及图像处理以后也需要做处理，在一些轻量级的模型推理框架，这一部分也是能够在框架内部处理，并做成一个服务。</p>
@@ -791,51 +796,48 @@ mjx-container[display="true"] + br {
 </ul>
 
     </div>
-  </div><br>不过，由于我目前没有搜集太多关于服务推理框架的内容，所以在这里也只是做一个简单的收录：</p>
-<div class="table-container">
+  </div>
+<p>不过，由于我目前没有搜集太多关于服务推理框架的内容，所以在这里也只是做一个简单的收录：</p>
 <table>
 <thead>
 <tr>
-<th style="text-align:center">服务框架</th>
-<th style="text-align:center">时间</th>
-<th style="text-align:center">特点</th>
-<th style="text-align:center">仓库地址</th>
+<th align="center">服务框架</th>
+<th align="center">时间</th>
+<th align="center">特点</th>
+<th align="center">仓库地址</th>
 </tr>
 </thead>
-<tbody>
-<tr>
-<td style="text-align:center">TensorFlow Serving</td>
-<td style="text-align:center">2016</td>
-<td style="text-align:center">只支持TensorFlow，但TF已经逐渐式微</td>
-<td style="text-align:center"><a class="link" target="_blank" rel="noopener" href="https://github.com/tensorflow/serving">链接<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
+<tbody><tr>
+<td align="center">TensorFlow Serving</td>
+<td align="center">2016</td>
+<td align="center">只支持TensorFlow，但TF已经逐渐式微</td>
+<td align="center"><a class="link" target="_blank" rel="noopener" href="https://github.com/tensorflow/serving">链接<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
 </tr>
 <tr>
-<td style="text-align:center">TritonServe</td>
-<td style="text-align:center">2018</td>
-<td style="text-align:center">全都支持，但入门稍难</td>
-<td style="text-align:center"><a class="link" target="_blank" rel="noopener" href="https://github.com/triton-inference-server/server">链接<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
+<td align="center">TritonServe</td>
+<td align="center">2018</td>
+<td align="center">全都支持，但入门稍难</td>
+<td align="center"><a class="link" target="_blank" rel="noopener" href="https://github.com/triton-inference-server/server">链接<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
 </tr>
 <tr>
-<td style="text-align:center">BentoML</td>
-<td style="text-align:center">2019</td>
-<td style="text-align:center">全都支持</td>
-<td style="text-align:center"><a class="link" target="_blank" rel="noopener" href="https://github.com/bentoml/BentoML">链接<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
+<td align="center">BentoML</td>
+<td align="center">2019</td>
+<td align="center">全都支持</td>
+<td align="center"><a class="link" target="_blank" rel="noopener" href="https://github.com/bentoml/BentoML">链接<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
 </tr>
 <tr>
-<td style="text-align:center">KServe(原KFServing)</td>
-<td style="text-align:center">2020</td>
-<td style="text-align:center">全都支持</td>
-<td style="text-align:center"><a class="link" target="_blank" rel="noopener" href="https://github.com/kserve/kserve">链接<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
+<td align="center">KServe(原KFServing)</td>
+<td align="center">2020</td>
+<td align="center">全都支持</td>
+<td align="center"><a class="link" target="_blank" rel="noopener" href="https://github.com/kserve/kserve">链接<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
 </tr>
 <tr>
-<td style="text-align:center">TorchServe</td>
-<td style="text-align:center">2020</td>
-<td style="text-align:center">只支持PyTorch，入门稍简单，但文档比较差(已停止维护)</td>
-<td style="text-align:center"><a class="link" target="_blank" rel="noopener" href="https://github.com/pytorch/serve">链接<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
+<td align="center">TorchServe</td>
+<td align="center">2020</td>
+<td align="center">只支持PyTorch，入门稍简单，但文档比较差(已停止维护)</td>
+<td align="center"><a class="link" target="_blank" rel="noopener" href="https://github.com/pytorch/serve">链接<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
 </tr>
-</tbody>
-</table>
-</div>
+</tbody></table>
 <p>后续个人会拿一个到几个作为入门熟悉模型部署这一内容。</p>
 
 		</div>
