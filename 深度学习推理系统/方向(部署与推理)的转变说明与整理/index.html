@@ -759,7 +759,6 @@ mjx-container[display="true"] + br {
     </div>
   </div>
 
-
   <div class="note-large red">
     <div class="notel-title rounded-t-lg p-3 font-bold text-lg flex flex-row gap-2 items-center">
       <p>多模型部署</p>
@@ -771,7 +770,6 @@ mjx-container[display="true"] + br {
     </div>
   </div>
 
-
   <div class="note-large blue">
     <div class="notel-title rounded-t-lg p-3 font-bold text-lg flex flex-row gap-2 items-center">
       <p>模型推理加速</p>
@@ -782,7 +780,6 @@ mjx-container[display="true"] + br {
 
     </div>
   </div>
-
 <p>接下来就在这里对上述的两个内容进行总体上的阐述，以及将相关的问题给简单罗列一下，有一个总体上的理解。</p>
 <h2 id="模型部署概述"><a href="#模型部署概述" class="headerlink" title="模型部署概述"></a>模型部署概述</h2><h3 id="从模型推理系统框架说起"><a href="#从模型推理系统框架说起" class="headerlink" title="从模型推理系统框架说起"></a>从模型推理系统框架说起</h3><p>其实这一块是延续着之前<code>TorchServe</code>的模型推理系统框架的，只不过这里略微有点区别的是，模型推理系统框架除了单模型的多计算节点多副本部署之外，最大的作用就是能够作为一个<strong>系统</strong>管理底层的计算资源，模型调度(对不同用户访问频次进行感知，动态调整模型副本数量)。</p>
 <p>从这个角度来看，<code>TorchServe</code>确实也不适合作为“<strong>模型推理系统框架</strong>”的服务作为，因为它并不能感知用户的访问频率和使用量对其进行模型副本的调整，当然有其他的方式来做到，但是这样<code>Torchserve</code>也就可有可无的。事实上，我认为<code>TorchServe</code>想要做的创新可能主要是结合<code>Pytorch.compile</code>以及<code>workflow</code>这两个来组合小模型之间的快速部署和配合，但在大模型的背景下，一个模型就可以看很多事情，而不是很多模型协同干一个事情，也可以看出之前相关团队对技术发展的没有做好足够的判断。</p>
@@ -794,52 +791,56 @@ mjx-container[display="true"] + br {
 <p>具体来说，一般模型部署流程，首先在深度学习框架(比如<code>Pytorch</code>、<code>TensorFlow</code>等)上搭建好深度学习模型，并且利用数据和深度学习框架对这些模型训练训练完毕以后，就可以把模型结构和模型参数分离开来，对这一块部分进行模型部署。大部分情况下模型部署只需要模型前向传播的计算即可，少部分场景还可以通过运行过程中获取的数据进行模型的训练。前者叫做“离线训练”，数据都是模型非部署时候采集的对模型进行训练，在部署时不改变模型；后者叫做“在线训练”，模型部署上去的时候，同时采集数据，利用在线搜集的数据对模型进行训练。</p>
 <h3 id="模型部署所思考的问题"><a href="#模型部署所思考的问题" class="headerlink" title="模型部署所思考的问题"></a>模型部署所思考的问题</h3><p>但是不管哪一种形式，模型部署和深度学习框架都脱离了，或者说，当一个场景确定使用某模型的时候，其训练方法和计算过程也被确定下来，而不需要再维持一种“<strong>模型开发</strong>”的组件，比如深度学习框架。所以在这个基础上，模型部署天然地带有运行环境轻便，或者说去掉了很多冗余组件的情况，比如你不需要带着一个深度学习框架来计算一个模型。甚至更极端地，我们完全可以通过将前向传播的过程用函数的方式固定下来(此时该程序是完全针对该模型定制化的程序)，使得该程序的体系尽可能小，这就是模型部署。</p>
 <p>当前主流模型部署框架有(并不全，只列举当前主流的框架)：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
-<th align="center">框架</th>
-<th align="center">地址</th>
-<th align="center">简介</th>
-<th align="center">支持平台</th>
+<th style="text-align:center">框架</th>
+<th style="text-align:center">地址</th>
+<th style="text-align:center">简介</th>
+<th style="text-align:center">支持平台</th>
 </tr>
 </thead>
-<tbody><tr>
-<td align="center">ONNX (Open Neural Network Exchange)</td>
-<td align="center"><a class="link" target="_blank" rel="noopener" href="http://www.baidu.com/">Github仓库<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
-<td align="center">微软开发的<strong>开放模型格式标准</strong>，可以实现不同模型框架之间的转换</td>
-<td align="center">跨平台</td>
+<tbody>
+<tr>
+<td style="text-align:center">ONNX (Open Neural Network Exchange)</td>
+<td style="text-align:center"><a class="link" target="_blank" rel="noopener" href="http://www.baidu.com">Github仓库<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
+<td style="text-align:center">微软开发的<strong>开放模型格式标准</strong>，可以实现不同模型框架之间的转换</td>
+<td style="text-align:center">跨平台</td>
 </tr>
 <tr>
-<td align="center">TensorRT</td>
-<td align="center"><a class="link" target="_blank" rel="noopener" href="https://github.com/NVIDIA/TensorRT">Github仓库<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
-<td align="center">NVIDIA开发的，针对NVIDAI计算设备的转换和优化</td>
-<td align="center">NVIDIA-GPU</td>
+<td style="text-align:center">TensorRT</td>
+<td style="text-align:center"><a class="link" target="_blank" rel="noopener" href="https://github.com/NVIDIA/TensorRT">Github仓库<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
+<td style="text-align:center">NVIDIA开发的，针对NVIDAI计算设备的转换和优化</td>
+<td style="text-align:center">NVIDIA-GPU</td>
 </tr>
 <tr>
-<td align="center">OpenVINO</td>
-<td align="center"><a class="link" target="_blank" rel="noopener" href="https://github.com/openvinotoolkit/openvino">Github仓库<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
-<td align="center">Intel硬件高性能推理</td>
-<td align="center">Intel-CPU、Intel-GPU、VPU</td>
+<td style="text-align:center">OpenVINO</td>
+<td style="text-align:center"><a class="link" target="_blank" rel="noopener" href="https://github.com/openvinotoolkit/openvino">Github仓库<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
+<td style="text-align:center">Intel硬件高性能推理</td>
+<td style="text-align:center">Intel-CPU、Intel-GPU、VPU</td>
 </tr>
 <tr>
-<td align="center">MNN (Mobile Neural Network)</td>
-<td align="center"><a class="link" target="_blank" rel="noopener" href="https://github.com/alibaba/MNN">Github仓库<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
-<td align="center">阿里开发的，具有良好的通用性</td>
-<td align="center">ARM CPU、ARM GPU、X86 CPU、GPU等</td>
+<td style="text-align:center">MNN (Mobile Neural Network)</td>
+<td style="text-align:center"><a class="link" target="_blank" rel="noopener" href="https://github.com/alibaba/MNN">Github仓库<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
+<td style="text-align:center">阿里开发的，具有良好的通用性</td>
+<td style="text-align:center">ARM CPU、ARM GPU、X86 CPU、GPU等</td>
 </tr>
 <tr>
-<td align="center">TVM (Apache TVM)</td>
-<td align="center"><a class="link" target="_blank" rel="noopener" href="https://github.com/apache/tvm">Github仓库<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
-<td align="center">深度学习编译器，支持多种后端硬件自动优化模型部署</td>
-<td align="center">多种CPU、GPU和专用加速器</td>
+<td style="text-align:center">TVM (Apache TVM)</td>
+<td style="text-align:center"><a class="link" target="_blank" rel="noopener" href="https://github.com/apache/tvm">Github仓库<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
+<td style="text-align:center">深度学习编译器，支持多种后端硬件自动优化模型部署</td>
+<td style="text-align:center">多种CPU、GPU和专用加速器</td>
 </tr>
 <tr>
-<td align="center">mediapipe</td>
-<td align="center"><a class="link" target="_blank" rel="noopener" href="https://github.com/google-ai-edge/mediapipe">Github仓库<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
-<td align="center">Google开源，构建多模态应用机器学习管道，提供预构建组件（如目标检测、手势识别）</td>
-<td align="center">跨平台（移动、工作站、服务器）</td>
+<td style="text-align:center">mediapipe</td>
+<td style="text-align:center"><a class="link" target="_blank" rel="noopener" href="https://github.com/google-ai-edge/mediapipe">Github仓库<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></td>
+<td style="text-align:center">Google开源，构建多模态应用机器学习管道，提供预构建组件（如目标检测、手势识别）</td>
+<td style="text-align:center">跨平台（移动、工作站、服务器）</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>从上面可以看到，当前模型部署的框架主要想要解决的就是，从已有的深度学习框架训练出来的模型如何在不同(指定)的硬件平台上以该硬件平台上运行的方式进行模型计算，如果硬件平台提供高效的计算方式，特别是矩阵计算方式，则能够提高模型计算速度。</p>
 <p>简单来说，模型部署从编写代码到运行的时候可以看做，这一个程序脱离了之前的开发阶段，以一种精简的方式来进行运行，可能可以简单类比为JAVA程序能够在不同的硬件平台上运行，只要这个硬件平台能够运行底层的JAVA虚拟机。从上述主流的框架来看，可以针对移动端和边缘设备上部署，也可以针对特殊的设备比如NVIDIA设备进行部署。</p>
 <p>可以简单总结这里面的问题：</p>
@@ -876,7 +877,6 @@ mjx-container[display="true"] + br {
 
     </div>
   </div>
-
 <p>从这个直接的描述来看，从另一个角度理解，剪枝就是找到这个模型中不怎么影响模型能力的参数，把这些参数给删去即可。</p>
 
   <div class="note-large yellow">
@@ -889,7 +889,6 @@ mjx-container[display="true"] + br {
 
     </div>
   </div>
-
 <p>量化从某种角度来说来看，可以看做是横切模型，或者说针对数据类型的“剪枝”。</p>
 
   <div class="note-large yellow">
@@ -902,7 +901,6 @@ mjx-container[display="true"] + br {
 
     </div>
   </div>
-
 <p>蒸馏学习也是满足上述模型存在冗余的假设，大模型中有大量的冗余参数，而小模型的参数较少同时又需要达到比较高的性能，是尽可能调动了所有的参数。至少，从实践来看，比起直接在数据集上训练，蒸馏能够得到更好地性能。同时，数据也被压缩了(存模型比存大量的数据集要少)。</p>
 <h3 id="高性能计算层面的加速"><a href="#高性能计算层面的加速" class="headerlink" title="高性能计算层面的加速"></a>高性能计算层面的加速</h3><p>而从高性能计算角度来看，当前的深度学习模型主要以矩阵计算为主，并且最重要的，模型仍然是在当前的计算机体系中运行的，所以可以从针对矩阵计算优化，计算优化的角度来加速模型推理。</p>
 <p>在这里简单做一点原理上的解释：那就是尽可能利用计算上的空间局部性和时间局部性来加速计算，简单来说就是，尽可能减少通信，尽可能做更多的计算，尽可能压缩计算。</p>
