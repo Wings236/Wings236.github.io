@@ -496,7 +496,7 @@
         <div class="label text-third-text-color text-sm">分类</div>
     </a>
     <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
-        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">15</div>
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">16</div>
         <div class="label text-third-text-color text-sm">文章</div>
     </a>
 </div>
@@ -533,7 +533,7 @@
 				<div class="author flex items-center">
 					<span class="name text-default-text-color text-lg font-semibold">Wings</span>
 					
-					<span class="author-label ml-1.5 text-xs px-2 py-0.5 rounded-small text-third-text-color border border-shadow-color-1">Lv2</span>
+					<span class="author-label ml-1.5 text-xs px-2 py-0.5 rounded-small text-third-text-color border border-shadow-color-1">Lv3</span>
 					
 				</div>
 				<div class="meta-info">
@@ -599,12 +599,8 @@
 <h2 id="信息化数据形态描述"><a href="#信息化数据形态描述" class="headerlink" title="信息化数据形态描述"></a>信息化数据形态描述</h2><p>从根本来说，深度学习模型是建立在当前信息计算机下的一个产物，所以本质上深度学习模型所接触的数据是来自对现实世界相关内容的“采样”，“仿真”和“数字化”。毕竟有初中甚至小学的认知应该都能够理解，现实的物理世界主要是由<strong>原子，分子</strong>这些概念所构成的，但是在信息化的世界里面，则由01数字构建的，所以为了能够让信息世界理解现实世界的内容，就需要对相关的内容进行转换。</p>
 <p>所以一个肉眼能够看到的场景，其物理大抵是首先通过物体对光的反射进入到人的肉眼再进行生物信号的转化，而数字世界则是通过感光仪器，将其转换成数字信号读取，虽然很难说谁能够看得更清晰更仔细，但这两个肯定都不是这个场景本身，而是这个场景的光的记录。</p>
 <p>虽然对人肉眼所接触的信息和处理不清晰，但是在信息领域，这一块还是相对比较清楚，一般会采用矩阵的形式对数字化后的照片进行存储：</p>
-<script type="math/tex; mode=display">
-A_\text{Photo} = \begin{bmatrix}
-    a_{11} & \dots & a_{1n} \\\\
-    \vdots & \ddots & \vdots \\\\
-    a_{n1} & \dots & a_{nn}
-\end{bmatrix},</script><p>其中$a_{ij}$为照片所存储的像素，这个矩阵可以有多种形式存储，这取决于用什么技术存储该相片的信息。</p>
+<p>$$<br>A_\text{Photo} &#x3D; \begin{bmatrix}<br>    a_{11} &amp; \dots &amp; a_{1n} \\<br>    \vdots &amp; \ddots &amp; \vdots \\<br>    a_{n1} &amp; \dots &amp; a_{nn}<br>\end{bmatrix},<br>$$</p>
+<p>其中$a_{ij}$为照片所存储的像素，这个矩阵可以有多种形式存储，这取决于用什么技术存储该相片的信息。</p>
 <p>类似地，在物理世界，文字本质上是“图片”，首先文字本身并没有一个“物体”是文字，所以自然也无法将其通过很直接的方法触碰和拿到，文字类似一种作画，在物理层面上是一些可染色颜料所构成的图案，可以代表某一符号，所以对于人类来说，是先看到这些图案，才理解到他们是什么字体；而在信息领域，则刚好相反，计算机本身看不到文字图案也不需要看到文字图案，在信息领域中，是通过符号<strong>编码</strong>，比如ASCII码，Unicode编码对相关符号存储，而只是在需要展示的时候才将其从“字体库”中找到对应的图片展示在界面上。</p>
 <p>实际上，这两个方面就已经是当前物理世界信息转换成数字世界信息的两种范式：前者通过仪器数字化表示物理信息，后者通过设定好的编码(前提是内容相对固定)，在需要交互的时候进行展示已经存储好的内容。</p>
 <p>所以，在这个基础上，音频、视频等内容是前者，音频可以先假设是一种正弦余弦函数组合，通过现实世界对声音震动的采样拟合对应的待定系数；而视频则是音频加多帧视频的组合。</p>
@@ -752,7 +748,7 @@ A_\text{Photo} = \begin{bmatrix}
                 
                 <p class="post-count space-x-0.5">
                     <span>
-                        共撰写了 15 篇文章
+                        共撰写了 16 篇文章
                     </span>
                     
                 </p>
